@@ -26,7 +26,18 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         throw new errors_1.BadRequestError("Email already in use");
     }
     const user = yield User_1.default.create({ name, email, password });
-    res.status(http_status_codes_1.StatusCodes.CREATED).json({ user });
+    const token = user.createJWT();
+    res
+        .status(http_status_codes_1.StatusCodes.CREATED)
+        .json({
+        user: {
+            email: user.email,
+            lastName: user.lastName,
+            location: user.location,
+            name: user.name,
+        },
+        token,
+    });
 });
 exports.register = register;
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

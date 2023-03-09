@@ -1,8 +1,14 @@
 import * as mongoose from "mongoose";
 import { Model } from "mongoose";
 import { UserModel } from "../types/UserInterface";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-type UserType = UserModel & mongoose.Document;
+interface UserMethods {
+  createJWT(): string;
+}
+
+type UserType = UserModel & UserMethods & mongoose.Document;
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -27,6 +33,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide password"],
     minLength: 6,
+    select: false,
   },
   lastName: {
     type: String,
@@ -41,6 +48,17 @@ const UserSchema = new mongoose.Schema({
     default: "my city",
   },
 });
+
+UserSchema.pre("save", async function () {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+UserSchema.methods.createJWT = function () {
+  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_LIFETIME,
+  });
+};
 
 const User: Model<UserType> = mongoose.model<UserType>("User", UserSchema);
 

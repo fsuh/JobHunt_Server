@@ -1,5 +1,3 @@
-import validator from "validator";
-
 export interface UserModel {
   name: {
     type: string;
@@ -21,6 +19,7 @@ export interface UserModel {
     type: string;
     required: [boolean, string];
     minLength: number;
+    select: boolean;
   };
   lastName?: {
     type: string;
