@@ -15,8 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUser = exports.login = exports.register = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const User_1 = __importDefault(require("../models/User"));
+const errors_1 = require("../errors");
 const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield User_1.default.create(req.body);
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        throw new errors_1.BadRequestError("Please provide all values");
+    }
+    const userAlreadyExists = yield User_1.default.findOne({ email });
+    if (userAlreadyExists) {
+        throw new errors_1.BadRequestError("Email already in use");
+    }
+    const user = yield User_1.default.create({ name, email, password });
     res.status(http_status_codes_1.StatusCodes.CREATED).json({ user });
 });
 exports.register = register;
